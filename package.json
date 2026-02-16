@@ -1,0 +1,39 @@
+{
+  "name": "rosterra-desktop",
+  "version": "1.0.0",
+  "description": "Rosterra Desktop App",
+  "author": "Rosterra",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "frontend": "npm run dev --prefix frontend",
+    "backend": "npm run dev --prefix server",
+    "electron": "electron .",
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\" \"wait-on http://localhost:5173 && npm run electron\"",
+    "build:frontend": "npm run build --prefix frontend",
+    "build": "npm run build:frontend && electron-builder"
+  },
+  "devDependencies": {
+    "@electron-forge/cli": "^7.11.1",
+    "concurrently": "^8.0.0",
+    "electron": "^30.0.0",
+    "electron-builder": "26.7.0",
+    "electron-packager": "^17.1.2",
+    "wait-on": "^7.0.0"
+  },
+  "build": {
+    "appId": "com.rosterra.app",
+    "productName": "Rosterra",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "electron/**/*",
+      "frontend/dist/**/*",
+      "server/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis"
+    }
+  }
+}

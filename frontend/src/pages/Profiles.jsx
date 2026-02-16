@@ -2,7 +2,9 @@ import { useState, useMemo, useEffect } from 'react'
 import { useData } from '../context/DataContext'
 import { parseExcelFile, parseCSVFile } from '../utils/excelParser'
 import { exportToExcel, exportToCSV, exportToPDF } from '../utils/exportUtils'
-import { Upload, Download, FileSpreadsheet, FileText, Trash2, Edit2, Check, X, ChevronDown } from 'lucide-react'
+import ManualDataEntryModal from '../components/ManualDataEntryModal'
+import { roasterAPI } from '../utils/api'
+import { Upload, Download, FileSpreadsheet, FileText, Trash2, Edit2, Check, X, ChevronDown, Plus } from 'lucide-react'
 
 const RANGE_CATEGORIES = ['All', 'NANO', '10K-50K', '50K-100K', '100K-200K', '200K-500K', '500K-1M', '1M+']
 
@@ -50,7 +52,7 @@ function getClickableUrl(url) {
 }
 
 function Profiles({ searchTerm = '' }) {
-  const { profiles, selectedProfiles, toggleSelectProfile, selectAll, deselectAll, updateProfile, deleteProfile, deleteProfiles, addProfiles } = useData()
+  const { profiles, selectedProfiles, toggleSelectProfile, selectAll, deselectAll, updateProfile, deleteProfile, deleteProfiles, addProfiles, addRoasterProfiles } = useData()
   const [rangeFilters, setRangeFilters] = useState(['All'])
   const [stateFilters, setStateFilters] = useState(['All'])
   const [categoryFilters, setCategoryFilters] = useState(['All'])
@@ -59,6 +61,63 @@ function Profiles({ searchTerm = '' }) {
   const [editData, setEditData] = useState({})
   const [importing, setImporting] = useState(false)
   const [openDropdown, setOpenDropdown] = useState(null) // 'range', 'state', 'category', 'sex', or null
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [notification, setNotification] = useState({ show: false, message: '', type: '' })
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type })
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: '' })
+    }, 5000)
+  }
+
+  const handleManualDataSubmit = async (data) => {
+    try {
+      const token = localStorage.getItem('token')
+      
+      if (token) {
+        // User is logged in - save to backend database
+        try {
+          const savedData = await roasterAPI.create(data)
+          
+          // Also add to local profiles context (convert format if needed)
+          const profileData = {
+            id: savedData._id || Date.now().toString(),
+            ...savedData
+          }
+          addProfiles([profileData])
+          
+          // Also update roaster profiles
+          addRoasterProfiles([savedData])
+          
+          showNotification('Profile added successfully to database!', 'success')
+        } catch (apiError) {
+          console.error('API Error:', apiError)
+          // Fallback to local storage if API fails
+          const localProfileData = {
+            id: Date.now().toString(),
+            ...data,
+            createdAt: new Date().toISOString()
+          }
+          addProfiles([localProfileData])
+          showNotification('Profile added locally (database unavailable)', 'success')
+        }
+      } else {
+        // Not logged in - save locally only
+        const localProfileData = {
+          id: Date.now().toString(),
+          ...data,
+          createdAt: new Date().toISOString()
+        }
+        addProfiles([localProfileData])
+        showNotification('Profile added locally! Login to save to database.', 'success')
+      }
+    } catch (error) {
+      console.error('Error saving manual data:', error)
+      showNotification(error.message || 'Failed to save profile', 'error')
+      throw error
+    }
+  }
 
   // Get unique values from profiles for filters
   const uniqueStates = useMemo(() => {
@@ -278,6 +337,15 @@ function Profiles({ searchTerm = '' }) {
 
   return (
     <div className="space-y-6">
+      {/* Notification */}
+      {notification.show && (
+        <div className={`fixed top-4 right-4 z-50 px-6 py-4 rounded-lg shadow-lg ${
+          notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+        } text-white`}>
+          {notification.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -289,6 +357,13 @@ function Profiles({ searchTerm = '' }) {
           </p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="px-5 py-2.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all flex items-center space-x-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 font-medium"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Add Manual Entry</span>
+          </button>
           <label className="px-5 py-2.5 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all cursor-pointer flex items-center space-x-2 shadow-lg shadow-primary-500/30 hover:shadow-primary-500/50 font-medium">
             <Upload className="w-5 h-5" />
             <span>{importing ? 'Importing...' : 'Import Excel/CSV'}</span>
@@ -798,6 +873,13 @@ function Profiles({ searchTerm = '' }) {
           </table>
         </div>
       </div>
+
+      {/* Manual Data Entry Modal */}
+      <ManualDataEntryModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleManualDataSubmit}
+      />
     </div>
   )
 }

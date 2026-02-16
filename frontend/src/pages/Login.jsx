@@ -7,6 +7,7 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [pendingMessage, setPendingMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -14,14 +15,27 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setPendingMessage('')
     setLoading(true)
 
-    const result = login(email, password)
-    
-    if (result.success) {
-      navigate('/dashboard')
-    } else {
-      setError(result.error)
+    try {
+      const result = await login(email, password)
+      
+      if (result.success) {
+        navigate('/dashboard')
+      } else {
+        // Check if it's a pending approval error
+        if (result.status === 'pending') {
+          setPendingMessage(result.message || 'Your account is pending admin approval. Please wait for approval to login.')
+          setError('')
+        } else if (result.status === 'rejected') {
+          setError(result.message || 'Your account has been rejected. Please contact support.')
+        } else {
+          setError(result.error || 'Login failed')
+        }
+      }
+    } catch (err) {
+      setError(err.message || 'Login failed')
     }
     
     setLoading(false)
@@ -41,6 +55,18 @@ function Login() {
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
             {error}
+          </div>
+        )}
+
+        {pendingMessage && (
+          <div className="bg-yellow-50 border border-yellow-200 px-4 py-4 rounded-lg mb-4">
+            <h3 className="text-yellow-900 font-semibold mb-2">Account Pending Approval</h3>
+            <p className="text-yellow-700 text-sm mb-2">
+              {pendingMessage}
+            </p>
+            <p className="text-yellow-600 text-xs">
+              Your account is awaiting admin approval. You will receive access once approved.
+            </p>
           </div>
         )}
 

@@ -1,0 +1,24 @@
+🚨 EMERGENCY FIX - Can't Login
+
+QUICK FIX (30 seconds):
+=======================
+
+1. Open new terminal
+
+2. Run:
+   cd server
+   node scripts/migrateExistingUsers.js
+
+3. Done! You can now login.
+
+=======================
+
+What this does:
+- Sets all existing users to "approved" status
+- You can login immediately
+- New signups will still need approval
+
+Already fixed in code:
+- Default status changed to "approved"
+- Only /signup creates pending users
+- Everything else is approved automatically

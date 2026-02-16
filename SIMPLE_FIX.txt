@@ -1,0 +1,45 @@
+🚨 SIMPLE FIX - 3 Steps
+
+Your error: "Unexpected token '<' - is not valid JSON"
+
+WHY: Backend server doesn't have the new /api/users route loaded
+
+
+✅ FIX:
+=======
+
+1. Find your backend terminal (where you ran "npm run dev")
+
+2. Press: Ctrl + C (to stop it)
+
+3. Run again:
+   cd C:\Users\Dell\Downloads\ROSTERRA\server
+   npm run dev
+
+4. Wait for: "✅ Loaded route: /api/users"
+
+5. Refresh your browser (F5)
+
+DONE! ✅
+
+
+WHAT TO EXPECT:
+===============
+
+After restart, you'll see:
+✅ MongoDB connected
+✅ Loaded route: /api/auth
+✅ Loaded route: /api/roasters
+✅ Loaded route: /api/users    ← NEW! Must see this
+🚀 Server running on port 5000
+
+
+If you don't see "✅ Loaded route: /api/users", the route file might be missing.
+
+
+QUICK CHECK:
+============
+
+File should exist: C:\Users\Dell\Downloads\ROSTERRA\server\routes\users.js
+
+If missing, I can recreate it!

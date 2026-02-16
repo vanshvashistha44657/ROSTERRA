@@ -1,0 +1,35 @@
+🚨 RUN THESE COMMANDS IN ORDER
+================================
+
+TERMINAL 1 - Check Database:
+----------------------------
+cd C:\Users\Dell\Downloads\ROSTERRA\server
+node scripts\checkDatabase.js
+
+(This creates admin user if none exists)
+
+
+TERMINAL 1 - Start Backend:
+---------------------------
+cd C:\Users\Dell\Downloads\ROSTERRA\server
+npm run dev
+
+(Wait for: ✅ Loaded route: /api/users)
+
+
+BROWSER:
+--------
+1. Press F12
+2. Go to "Application" tab
+3. Local Storage → Clear
+4. Close F12
+5. Press F5 to refresh
+6. Login with:
+   Email: admin@rosterra.com
+   Password: admin123
+
+
+DONE! ✅
+========
+
+If you see errors, read: COMPLETE_FIX_GUIDE.md

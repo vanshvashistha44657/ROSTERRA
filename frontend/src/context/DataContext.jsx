@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
+import { roasterAPI } from '../utils/api'
 
 const DataContext = createContext()
 
@@ -6,6 +7,12 @@ export function DataProvider({ children }) {
   const [profiles, setProfiles] = useState([])
   const [selectedProfiles, setSelectedProfiles] = useState([])
   const [roasterProfiles, setRoasterProfiles] = useState([])
+  const [isLoadingRoasters, setIsLoadingRoasters] = useState(false)
+
+  // Load roaster profiles from backend on mount
+  useEffect(() => {
+    loadRoasterProfilesFromBackend()
+  }, [])
 
   useEffect(() => {
     // Load profiles from localStorage
@@ -13,12 +20,35 @@ export function DataProvider({ children }) {
     if (stored) {
       setProfiles(JSON.parse(stored))
     }
-    // Load roaster profiles from localStorage
-    const storedRoasters = localStorage.getItem('rosterra_roaster_profiles')
-    if (storedRoasters) {
-      setRoasterProfiles(JSON.parse(storedRoasters))
-    }
   }, [])
+
+  const loadRoasterProfilesFromBackend = async () => {
+    try {
+      setIsLoadingRoasters(true)
+      const token = localStorage.getItem('token')
+      
+      if (token) {
+        const roasters = await roasterAPI.getAll()
+        setRoasterProfiles(roasters)
+        localStorage.setItem('rosterra_roaster_profiles', JSON.stringify(roasters))
+      } else {
+        // Load from localStorage if not authenticated
+        const storedRoasters = localStorage.getItem('rosterra_roaster_profiles')
+        if (storedRoasters) {
+          setRoasterProfiles(JSON.parse(storedRoasters))
+        }
+      }
+    } catch (error) {
+      console.error('Error loading roaster profiles:', error)
+      // Fallback to localStorage
+      const storedRoasters = localStorage.getItem('rosterra_roaster_profiles')
+      if (storedRoasters) {
+        setRoasterProfiles(JSON.parse(storedRoasters))
+      }
+    } finally {
+      setIsLoadingRoasters(false)
+    }
+  }
 
   const saveProfiles = (newProfiles) => {
     setProfiles(newProfiles)
@@ -91,6 +121,7 @@ export function DataProvider({ children }) {
       profiles,
       selectedProfiles,
       roasterProfiles,
+      isLoadingRoasters,
       addProfiles,
       updateProfile,
       deleteProfile,
@@ -102,7 +133,8 @@ export function DataProvider({ children }) {
       setProfiles: saveProfiles,
       addRoasterProfiles,
       clearRoasterProfiles,
-      setRoasterProfiles: saveRoasterProfiles
+      setRoasterProfiles: saveRoasterProfiles,
+      loadRoasterProfilesFromBackend
     }}>
       {children}
     </DataContext.Provider>

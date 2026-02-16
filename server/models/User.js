@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['admin', 'staff'],
     default: 'staff'
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'approved', 'rejected'],
+    default: 'approved' // Default to approved so existing users can login
   }
 }, {
   timestamps: true

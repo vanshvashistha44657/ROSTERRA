@@ -175,11 +175,15 @@ function RoasterResponse() {
             <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6 shadow-lg">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-green-100 text-sm font-medium">Total Views Rate</p>
-                  <p className="text-3xl font-bold mt-2">100%</p>
-                  <p className="text-green-100 text-xs mt-1">Company coverage</p>
+                  <p className="text-green-100 text-sm font-medium">Avg View Rate</p>
+                  <p className="text-3xl font-bold mt-2">
+                    {stats.totalProfiles > 0 
+                      ? `${((stats.totalFollowers / stats.totalProfiles) / stats.totalFollowers * 100).toFixed(2)}%`
+                      : '0%'}
+                  </p>
+                  <p className="text-green-100 text-xs mt-1">Average engagement</p>
                 </div>
-                <TrendingUp className="w-12 h-12 opacity-80" />
+                <Eye className="w-12 h-12 opacity-80" />
               </div>
             </div>
           </div>

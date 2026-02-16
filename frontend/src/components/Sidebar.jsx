@@ -12,7 +12,7 @@ import { NavLink } from 'react-router-dom'
 
 function Sidebar({ isOpen, setIsOpen }) {
   const menuItems = [
-    { icon: LayoutDashboard, label: 'All Profiles', path: '/dashboard' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
     { icon: Instagram, label: 'Instagram', path: '/platform/instagram' },
     { icon: Youtube, label: 'YouTube', path: '/platform/youtube' },
     { icon: Facebook, label: 'Facebook', path: '/platform/facebook' },

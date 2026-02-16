@@ -22,20 +22,24 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: 'Email already exists' })
     }
 
-    // Create user
+    // Create user with pending status
     const user = await User.create({
       name,
       email,
       password,
-      role: role === 'admin' ? 'admin' : 'staff'
+      role: role === 'admin' ? 'admin' : 'staff',
+      status: 'pending' // All new users start as pending
     })
 
-    const token = generateToken(user._id)
-
+    // Don't generate token yet - user needs admin approval
     res.status(201).json({
       success: true,
-      user: user.toJSON(),
-      token
+      message: 'Account created successfully. Please wait for admin approval to login.',
+      user: {
+        name: user.name,
+        email: user.email,
+        status: user.status
+      }
     })
   } catch (error) {
     res.status(400).json({ error: error.message })
@@ -59,6 +63,23 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
 
+    // Check if user is approved
+    if (user.status === 'pending') {
+      return res.status(403).json({ 
+        error: 'Account pending approval',
+        message: 'Your account is pending admin approval. Please wait for approval to login.',
+        status: 'pending'
+      })
+    }
+
+    if (user.status === 'rejected') {
+      return res.status(403).json({ 
+        error: 'Account rejected',
+        message: 'Your account has been rejected by admin. Please contact support.',
+        status: 'rejected'
+      })
+    }
+
     const token = generateToken(user._id)
 
     res.json({
@@ -71,7 +92,29 @@ router.post('/login', async (req, res) => {
   }
 })
 
-// Get current user
+// Verify token and get current user
+router.get('/verify', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]
+    
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' })
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
+    const user = await User.findById(decoded.userId)
+    
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' })
+    }
+
+    res.json({ user: user.toJSON() })
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' })
+  }
+})
+
+// Get current user (alias for verify)
 router.get('/me', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1]
