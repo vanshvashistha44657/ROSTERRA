@@ -5,7 +5,7 @@
 
 ,
    "rewrites": [
-    { "source": "/(.*)", "destination": "/https://rosterra-delta.vercel.app/dashboard" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
 
