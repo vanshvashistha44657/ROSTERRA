@@ -11,6 +11,7 @@ import FrameFaceRoaster from './pages/FrameFaceRoaster'
 import RoasterResponse from './pages/RoasterResponse'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { useState } from 'react'
 
 function App() {
@@ -76,6 +77,7 @@ function App() {
               />
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
             </Routes>
+            <SpeedInsights />
           </Router>
         </DataProvider>
       </AuthProvider>
